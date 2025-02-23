@@ -41,6 +41,7 @@ class Account(SQLModel, table=True):
     
     customer:Customer = Relationship(back_populates="accounts" )
     transactions:List[Transaction] = Relationship(back_populates="account") 
+    cards:List[Card] = Relationship(back_populates="account")
      
     __table_args__ = (
         CheckConstraint("account_type IN('savings', 'current', 'fixed', 'domicilary', 'salary')", name= "valid_account_types"))
@@ -96,9 +97,27 @@ class Transfer(SQLModel, table=True):
     receiver_transaction: Transaction = Relationship(back_populates="transfer_receiver")
     
     __table_arg__ = (CheckConstraint("amount > 0", name= "transfer_amount_positive")) 
+ 
     
+# validate card type
+class CardType(str, Enum):
+    mastercard = "mastercard"
+    visa = "visa"
+    verve = "verve"
+    giftcard = "giftcard"
+
 
 # create card model  
- 
-
+class Card(SQLModel, table=True):
+    card_id: Optional[int] = Field(default=None, primary_key=True)
+    card_type: CardType = Field(..., max_length=15)
+    card_number: str = Field(unique=True)
+    expiration_date: date   
+    is_active: bool = Field(default=True)
+    account_id: int = Field(foreign_key="account.account_id")
     
+    account:Account = Relationship(
+        back_populates="cards",  sa_column_kwargs={"onupdate": "CASCADE", "ondelete": "NO ACTION"})
+
+    __table_arg__ = (
+        CheckConstraint("card_type IN('mastercard', 'visa', 'verve', 'giftcard')", name="valid_card_type"))
