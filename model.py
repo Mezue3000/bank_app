@@ -34,7 +34,7 @@ class AccountType(str, Enum):
 class Account(SQLModel, table=True):
     account_id: Optional[int] = Field(default=None, primary_key=True)
     account_type: AccountType = Field(...)
-    account_number: str = Field(..., min_length=11, max_length=11)
+    account_number: str = Field(..., min_length=10, max_length=10)
     balance: Decimal = Field(default=Decimal("0.00"), sa_column_kwargs={"type": "Numeric(14, 2)"})
     customer_id: int = Field(
         foreign_key="customer.customer_id", sa_column_kwargs={"onupdate": "CASCADE", "ondelete": "NO ACTION"})
@@ -67,10 +67,12 @@ class Transaction(SQLModel, table=True):
     account_id: int = Field(
         foreign_key="account.account_id",
         sa_column_kwargs={"onupdate": "CASCADE", "ondelete": "NO ACTION"})
+     
     account:Account = Relationship(back_populates="transactions")
     transfer_sender: Optional[Transfer] = Relationship(
         back_populates="sender_transaction", 
         sa_relationship_kwargs={"uselist": False})
+    
     transfer_receiver: Optional[Transfer] = Relationship(
         back_populates="receiver_transaction", 
         sa_relationship_kwargs={"uselist": "receiver_transaction"})
@@ -90,6 +92,13 @@ class Transfer(SQLModel, table=True):
     sender_transaction_id: Optional[int] = Field(foreign_key=True, unique=True)
     receiver_transaction_id: Optional[int] = Field(foreign_key=True, unique=True)
     
-    __table_arg__ = (CheckConstraint("amount > 0", name= "transfer_amount_positive"))   
+    sender_transaction: Transaction = Relationship(back_populates="transfer_sender")
+    receiver_transaction: Transaction = Relationship(back_populates="transfer_receiver")
+    
+    __table_arg__ = (CheckConstraint("amount > 0", name= "transfer_amount_positive")) 
+    
+
+# create card model  
+ 
 
     
