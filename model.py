@@ -26,7 +26,6 @@ class AccountType(str, Enum):
     savings = "savings"
     current = "current"
     fixed = "fixed"
-    joint = "joint"
     domicilary = "domicilary"
     salary = "salary"
     
@@ -45,7 +44,7 @@ class Account(SQLModel, table=True):
     cards:List[Card] = Relationship(back_populates="account")
      
     __table_args__ = (
-        CheckConstraint("account_type IN('savings', 'current', 'fixed', 'joint' 'domicilary', 'salary')", name= "valid_account_types"))
+        CheckConstraint("account_type IN('savings', 'current', 'fixed', 'domicilary', 'salary')", name= "valid_account_types"))
 
 
 # validate transaction type
@@ -91,8 +90,11 @@ class Transfer(SQLModel, table=True):
     amount: Decimal = Field(..., gt=0.00, sa_column_kwargs={"type": "Numeric(14, 2)"})
     sender_name: Optional[str] = Field(max_length=50)
     beneficiary_name: Optional[str] = Field(max_length=50)
-    sender_transaction_id: Optional[int] = Field(foreign_key=True, unique=True)
-    receiver_transaction_id: Optional[int] = Field(foreign_key=True, unique=True)
+    sender_transaction_id: Optional[int] = Field(
+        foreign_key=True, unique=True, sa_column_kwargs={"Ondelete": "CASCADE"})
+    
+    receiver_transaction_id: Optional[int] = Field(
+        foreign_key=True, unique=True, sa_column_kwargs={"Ondelete": "CASCADE"})
     
     sender_transaction: Transaction = Relationship(back_populates="transfer_sender")
     receiver_transaction: Transaction = Relationship(back_populates="transfer_receiver")
