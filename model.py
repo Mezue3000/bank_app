@@ -26,6 +26,7 @@ class AccountType(str, Enum):
     savings = "savings"
     current = "current"
     fixed = "fixed"
+    joint = "joint"
     domicilary = "domicilary"
     salary = "salary"
     
@@ -44,7 +45,7 @@ class Account(SQLModel, table=True):
     cards:List[Card] = Relationship(back_populates="account")
      
     __table_args__ = (
-        CheckConstraint("account_type IN('savings', 'current', 'fixed', 'domicilary', 'salary')", name= "valid_account_types"))
+        CheckConstraint("account_type IN('savings', 'current', 'fixed', 'joint' 'domicilary', 'salary')", name= "valid_account_types"))
 
 
 # validate transaction type
