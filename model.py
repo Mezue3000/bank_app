@@ -21,7 +21,7 @@ class Customer(SQLModel, table=True):
     accounts: List[Account] = Relationship(back_populates="customer")
 
 
-# validate account_type
+# validate account_type(api validation)
 class AccountType(str, Enum):
     savings = "savings"
     current = "current"
@@ -43,11 +43,12 @@ class Account(SQLModel, table=True):
     transactions:List[Transaction] = Relationship(back_populates="account") 
     cards:List[Card] = Relationship(back_populates="account")
      
+# database validation
     __table_args__ = (
         CheckConstraint("account_type IN('savings', 'current', 'fixed', 'domicilary', 'salary')", name= "valid_account_types"))
 
 
-# validate transaction type
+# validate transaction type(api validation)
 class TransactionType(str, Enum):
     deposite = "deposite"
     withdrawal = "withdrwal"
@@ -77,7 +78,8 @@ class Transaction(SQLModel, table=True):
     transfer_receiver: Optional[Transfer] = Relationship(
         back_populates="receiver_transaction", 
         sa_relationship_kwargs={"uselist": "receiver_transaction"})
-    
+
+# database validation
     __table_arg__ = (CheckConstraint("transaction_type IN('deposit', 'withdrawal', 'transfer', 'payment', 'credit', 'foreign')", name="valid_transaction_type")) 
     
     __table_arg__ = (CheckConstraint("transaction_amount > 0", name= "transaction_amount_positive"))   
@@ -102,7 +104,7 @@ class Transfer(SQLModel, table=True):
     __table_arg__ = (CheckConstraint("amount > 0", name= "transfer_amount_positive")) 
  
     
-# validate card type
+# validate card type(api validation)
 class CardType(str, Enum):
     mastercard = "mastercard"
     visa = "visa"
@@ -122,5 +124,6 @@ class Card(SQLModel, table=True):
     account:Account = Relationship(
         back_populates="cards",  sa_column_kwargs={"onupdate": "CASCADE", "ondelete": "NO ACTION"})
 
+# database validation
     __table_arg__ = (
-        CheckConstraint("card_type IN('mastercard', 'visa', 'verve', 'giftcard')", name="valid_card_type"))
+        CheckConstraint("card_type IN('mastercard', 'visa', 'verve', 'giftcard')", name="valid_card_type")) 
